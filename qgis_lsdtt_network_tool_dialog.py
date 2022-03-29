@@ -26,6 +26,8 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.gui import QgsFileWidget
+from .lsdtt_network_tool import LSDTTNetworkTool
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,3 +44,12 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        self.fwOutputFileName.setStorageMode(QgsFileWidget.SaveFile)
+        self.pbRun.clicked.connect(self.onPbRunClicked)
+
+    def onPbRunClicked(self):
+        input = self.fwInputFileName.filePath()
+        output = self.fwOutputFileName.filePath()
+        basin_key = self.sbBasinKey.value()
+        export_nodes = self.cbExportNodes.isChecked()
+        tool = LSDTTNetworkTool(input, output, basin_key, export_nodes)
