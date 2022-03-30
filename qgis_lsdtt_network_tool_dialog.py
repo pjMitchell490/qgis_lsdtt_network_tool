@@ -23,6 +23,7 @@
 """
 
 import os
+import webbrowser
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
@@ -45,7 +46,14 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         self.fwOutputFileName.setStorageMode(QgsFileWidget.SaveFile)
+        self.pbRun = QtWidgets.QPushButton("Run")
         self.pbRun.clicked.connect(self.onPbRunClicked)
+        self.button_box.helpRequested.connect(self.onHelpClicked)
+
+        self.button_box.addButton(self.pbRun, QtWidgets.QDialogButtonBox.ActionRole)
+        
+    def onHelpClicked(self):
+        webbrowser.open('https://github.com/pjMitchell490/qgis_lsdtt_network_tool')
 
     def onPbRunClicked(self):
         input = self.fwInputFileName.filePath()

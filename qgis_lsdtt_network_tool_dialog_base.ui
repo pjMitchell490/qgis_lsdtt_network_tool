@@ -6,90 +6,129 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>839</width>
-    <height>454</height>
+    <width>678</width>
+    <height>501</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>LSDTT Network Tool</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="cbExportNodes">
-     <property name="text">
-      <string>Export Nodes</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="pbRun">
-     <property name="text">
-      <string>Run</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Output File Name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QgsFileWidget" name="fwOutputFileName"/>
-     </item>
-    </layout>
-   </item>
    <item row="0" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Input CSV Layer</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QgsFileWidget" name="fwInputFileName"/>
-     </item>
-    </layout>
-   </item>
-   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Basin Key</string>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
        </property>
+       <widget class="QWidget" name="parameters">
+        <attribute name="title">
+         <string>Parameters</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0" colspan="2">
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Input CSV Layer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QgsFileWidget" name="fwInputFileName"/>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0" colspan="2">
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QLabel" name="label">
+             <property name="text">
+              <string>Output File Name</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QgsFileWidget" name="fwOutputFileName"/>
+           </item>
+          </layout>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Basin Key</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QSpinBox" name="sbBasinKey"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QCheckBox" name="cbExportNodes">
+           <property name="text">
+            <string>Export Nodes</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="log">
+        <attribute name="title">
+         <string>Log</string>
+        </attribute>
+       </widget>
       </widget>
      </item>
      <item>
-      <widget class="QSpinBox" name="sbBasinKey"/>
+      <widget class="QTextBrowser" name="textBrowser">
+       <property name="minimumSize">
+        <size>
+         <width>300</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>300</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:7.8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a name=&quot;user-content-lsdtt-network-tool&quot;&gt;&lt;/a&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;L&lt;/span&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;SDTT-network-tool&lt;/span&gt;&lt;/h1&gt;
+&lt;h2 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt; font-weight:600;&quot;&gt;Builds a vectorized drainage network from LSDTopoTools outputs, divided at tributary junctions. Uses: analysis, plotting, GIS, model input.&lt;/span&gt;&lt;/h2&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
-   <item row="3" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>260</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="5" column="0">
+   <item row="1" column="0">
     <widget class="QDialogButtonBox" name="button_box">
+     <property name="contextMenuPolicy">
+      <enum>Qt::DefaultContextMenu</enum>
+     </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Help</set>
      </property>
     </widget>
    </item>
