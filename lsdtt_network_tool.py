@@ -41,7 +41,7 @@ class LSDTTNetworkTool:
 
         # Read the LSDTopoTools river chi profile inputs, indexing by the 
         # node index
-        rp = pd.read_csv(self._file_input, index_col='NI', na_filter=False) #node changed to NI
+        rp = pd.read_csv(self._file_input, index_col='index_node', na_filter=False) #node changed to NI
         # The "source key" sets the ID for each segment -- section of channel between
         # tributary junctions.
         segment_ids = np.array(list(set(rp['source_key'])))
@@ -61,7 +61,7 @@ class LSDTTNetworkTool:
 
         _tmplist = []
         for _node in rp.index:
-            _receiver_node = rp.loc[_node, 'receiver_NI'] #node changed to NI
+            _receiver_node = rp.loc[_node, 'receiver_node']
             if _receiver_node in rp.index and _node != _receiver_node:
                 _receiver_source_key = rp.loc[_receiver_node, 'source_key']
             else:
@@ -77,9 +77,9 @@ class LSDTTNetworkTool:
 
         # Next, identify these confluences by places where the receiver_source_key
         # differs from the source_key
-        confluence_downstream_nodes = list(set(list(rp['receiver_NI']
+        confluence_downstream_nodes = list(set(list(rp['receiver_node']
                                                         [rp['source_key'] !=
-                                                        rp['receiver_source_key']])))#node changed to NI
+                                                        rp['receiver_source_key']])))
         # Remove river mouths
         # Inefficient but should be relatively few points at this step.
         confluence_downstream_nodes = np.array(confluence_downstream_nodes)
@@ -128,9 +128,9 @@ class LSDTTNetworkTool:
         segments_nodes = []
         for _source_node in source_nodes:
             segment_nodes = [_source_node]
-            segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_NI'])#node changed to NI
+            segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_node'])
             while segment_nodes[-1] not in termination_nodes:
-                segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_NI'])#node changed to NI
+                segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_node'])
             segments_nodes.append(segment_nodes)
 
         # Next, reconstruct the data table elements for each of these points
