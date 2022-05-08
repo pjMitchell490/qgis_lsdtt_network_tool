@@ -11,7 +11,6 @@ class LSDTTNetworkTool:
         self._file_output = output
         self._basin_id = basin_key
         self._export_all_nodes = export_nodes
-        self.run_network_tool()
 
     def run_network_tool(self):
         print(self._file_input)
@@ -313,7 +312,7 @@ class LSDTTNetworkTool:
         print('Open in GIS to select your starter segment_ID.')
         """
 
-
+        outputs = {"network": self._file_output}
         if self._export_all_nodes:
             print("Exporting all nodes; this may take some time...")
             # Export nodes for use of plotting
@@ -323,4 +322,6 @@ class LSDTTNetworkTool:
             #   dfnodes.loc[mouth]['network_node_type'] = 'mouth'
             gdf_NetworkNodes = gpd.GeoDataFrame( dfnodes, geometry=gpd.points_from_xy(dfnodes.longitude, dfnodes.latitude, dfnodes.elevation), crs="EPSG:4326")
             gdf_NetworkNodes.to_file(file_output_nodes, driver="GPKG")
+            outputs["nodes"] = file_output_nodes
             print('Nodes written to', file_output_nodes)
+        return outputs

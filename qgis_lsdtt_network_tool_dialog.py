@@ -28,6 +28,7 @@ import webbrowser
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.gui import QgsFileWidget
+from qgis.core import QgsVectorLayer, QgsProject
 from .lsdtt_network_tool import LSDTTNetworkTool
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -56,8 +57,16 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         webbrowser.open('https://github.com/pjMitchell490/qgis_lsdtt_network_tool')
 
     def onPbRunClicked(self):
+        # Set input values to pass to the Network Tool
         input = self.fwInputFileName.filePath()
         output = self.fwOutputFileName.filePath()
         basin_key = self.sbBasinKey.value()
         export_nodes = self.cbExportNodes.isChecked()
+
+        # Instantiate and run tool
         tool = LSDTTNetworkTool(input, output, basin_key, export_nodes)
+        output = tool.run_network_tool()
+        # Add layers to map
+        for layer_name, layer_path in output.items():
+            vlayer = QgsVectorLayer(layer_path, layer_name, "ogr")
+            QgsProject.instance().addMapLayer(vlayer)
