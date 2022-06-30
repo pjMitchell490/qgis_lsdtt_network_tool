@@ -163,7 +163,7 @@ class LSDTTNetworkTool:
         icon_path = ':/plugins/qgis_lsdtt_network_tool/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Builds drainage network'),
+            text=self.tr(u'Build drainage network'),
             callback=self.run,
             parent=self.iface.mainWindow())
 

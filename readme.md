@@ -1,14 +1,15 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5920024.svg)](https://doi.org/10.5281/zenodo.5920024)
-
-# LSDTT-network-tool
+# LSDTT-network-tool QGIS Plugin
 Builds a vectorized drainage network from LSDTopoTools outputs, divided at tributary junctions. Uses: analysis, plotting, GIS, model input.
 
-# Guide 
-Before the lsdtt-network-tool can be used, we must create some files with the LSDTopoTools program. We will begin this guide at the very beginning, assuming that you have a DEM of your area of interest and would like to create some map view and long profile plots of the channels. 
+<img src="images/qgis_lsdtt_network_tool_screenshot.png" width="512" alt="Screenshot of plugin window">
 
-There are two tools that you will use in order to generate plots from your DEM. The first is the lsdtt-chi-mapping tool within LSDTopoTools, and the second is the LSDTT-network-tool (this program). Along the way, we will explain what the tool does, the neccesary (and optional) inputs, the outputs you will receive, and we will follow an example workflow from beginning to end to show how to structure commands. 
+## Introduction
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+The QGIS LSDTT Network Tool is a QGIS interface for lsdtt-network-tool.py. This guide assumes you have the proper inputs for the tool. For more detailed documentation and instructions of lsdtt-network-tool.py, visit [the lsdtt-network-tool GitHub repository](https://github.com/MNiMORPH/LSDTT-network-tool).
+
+lsdtt-network-tool creates a geopackage containing a channel network made of line segments from the points outputted by the chi-mapping tool. In other words, it creates a network of lines that show the channels generated during the chi mapping. These lines can be easily imported into your favorite GIS software. 
+
+## Guide
 
 ### Part 1: Using The `lsdtt-chi-mapping` Tool: Extracting Channels From Your DEM 
 LSDTopoTools is a program with many tools that are able to extract a range of data from DEMs. The `lsdtt-chi-mapping` tool can be used to create channel networks and record various parameters along each channel, such as elevation, flow distance, drainage area, chi, and more. 
@@ -90,119 +91,35 @@ $ lsdtt-chi-mapping LSDTT_chi_analysis.param
 ```
 * This will probably take a bit of time. Running our example data (~110 Mb) on our relatively powerful lab computer (which has 4 to 6 times more horsepower than a most laptops) takes a few minutes. If all goes well, then its time to move on to getting this data cleaned up to make nice plots!
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Part 2: Using The LSDTT-network-tool: Converting The Chi Map Data Into Easily Accessible And Readable Plots 
-
-There are two main steps in this section: the first builds a network of lines and points that can be easily entered into a GIS program of your choice, and the second creates long profile plots. This tool is really for visualizing data that you have already created using the LSDTopoTools program. 
-
-### Initial step: Build the channel network using lsdtt-network-tool.py
-
-lsdtt-network-tool.py creates a geopackage containing a channel network made of line segments from the points outputted by the chi-mapping tool. In other words, it creates a network of lines that show the channels generated during the chi mapping. These lines can be easily imported into your favorite GIS software. 
-
-#### Inputs
+### Inputs
 _Necessary inputs:_
 
-* `file_input`: The *_MChiSegmented.csv output from LSDTT2
+* `Input CSV Layer`: The *_MChiSegmented.csv output from LSDTT2
 
-* `file_output`: The filename for the output geodatabase(s)
+* `Output File Name`: The filename for the output geopackage
 
 
 _Optional inputs:_
 
-* `--basin_key=BASIN_KEY`: adding this flag allows you to select a single basin for which to generate a network. If the `--basin_key` flag is not used, then all channels generated during chi-mapping will be included in the geopackage. We will go over how to find the correct basin key for the channels you are interested in. 
+* `Basin Key`: select a single basin for which to generate a network. If the `--basin_key` flag is not used, then all channels generated during chi-mapping will be included in the geopackage.
+  * This step is optional, but if you are trying to highlight the network in one basin it is very helpful to pick a basin **before** you print geopackages. Processing will also go quicker if you do this. 
+  * To find which basin we want to print, we must look at the channels that we extracted. To do this: 
+    1. Open qgis and import *_MChiSegmented.csv
+    2. In the geoprocessing toolbox, find the 'Create points layer from table' tool and double click
+        - In the 'Input layer' box, select your csv
+        - In the 'X field' box, select longitude
+        - In the 'Y field' box, select lattitude
+        - Make sure the 'target CRS' box says 'ESPG:4326: WGS 84'
+        - Leave the rest as it is and run the tool
+        - Using the 'identify features' tool click on a channel that you are interested in. In the identify results box on the right, you will find the 'basin_key' for that channels network. 
 
-* `-n` (`--node_export`): adding this flag tells the program to export all nodes (in addition to all line segments) to a geopackage. **Including this flag is necessary if you are to use lsdtt-channel-plotter.py.**
+  * `Export Nodes`: adding this flag tells the program to export all nodes (in addition to all line segments) to a geopackage. **Including this flag is necessary if you are to use lsdtt-channel-plotter.py.**
 
 
-#### Outputs
+### Outputs
+
+Output files will be saved in the location given by `Output File Location` and will be automatically added as vector layers to the current QGIS map.
 
 * file_output.gpkg
 
 * file_output_nodes.gpkg (only with use of `-n` / `--node_export` flag)
-
-#### Workflow
-
-##### Step 1: Get node data and chi data in one file
-
-* Unfortunately, the extended data is placed only in the *_chi_data_map.csv, which does not contain all of the information needed. So, we need to copy 2 columns, 'NI' and 'receiver_NI', from the *_chi_data_map.csv file and paste them into the *_MChiSegmented.csv file. Luckily, these two sheets contain the same points and they are in the same order, so you can simply copy & paste. Once these columns are in the proper file, we must rename them. 'NI' becomes 'index_node' and 'receiver_NI' becomes 'receiver_node'.
-
-##### Step 2: Choose the basin for which you would like to print geopackages (optional)
-* This step is optional, but if you are trying to highlight the network in one basin it is very helpful to pick a basin **before** you print geopackages. Processing will also go quicker if you do this. 
-* To find which basin we want to print, we must look at the channels that we extracted. To do this: 
-  1. Open qgis and import *_MChiSegmented.csv
-  2. In the geoprocessing toolbox, find the 'Create points layer from table' tool and double click
-      - In the 'Input layer' box, select your csv
-      - In the 'X field' box, select longitude
-      - In the 'Y field' box, select lattitude
-      - Make sure the 'target CRS' box says 'ESPG:4326: WGS 84'
-      - Leave the rest as it is and run the tool
-      - Using the 'identify features' tool click on a channel that you are interested in. In the identify results box on the right, you will find the 'basin_key' for that channels network. 
-
-##### Step 3: Use the network tool to print line (and point) network geopackage(s)
-
-* Now that we have our basin_key and our data is organized, we can create our channel network geopackage(s). The command will looks something like the following:
-```
-$ python path/to/netowrk-tool/lsdtt-network-tool.py *nameofyourfile*_MChiSegmented.csv *nameofyourfile*gpkg --basin_key=BASIN_KEY -n
-```
-
-For our example, this looks like:
-```
-$ python /home/josie/LSDTopoTools/LSDTT-network-tool/lsdtt-network-tool.py CascadeRiver_MChiSegmented.csv CascadeRiver_network.gpkg --basin_key=6 -n 
-```
-* First, you summon the network-tool, this includes telling the computer to use python, and then the location of the program and its name. This is followed by the `file_input` which is the name of the file you want it to use, then the `file output` which is what you would like to name the geopackage(s). Next, we provide the `basin_key` and tell the `-n`/`--print_nodes` flag (optional). 
-* Run the command, then we are ready for the next step!
- 
-### Final step: Generate plots of the network and the channel long profile using lsdtt-channel-plotter.py
-
-#### Inputs 
-_Neccesary Inputs_
-* *.gpkg: geopackage created in previous step containing segments
-* *_nodes.gpkg: geopackage containing created in previous step containing nodes 
-
-_Optional Inputs_
-* `--id=ID`: flag selecting which channel to highlight (required when using the `-p`/`--lp` flag)
-* `--outbase=OUTBASE`: flag specifies a prefix for all files printed (required when using the `-g`/`--geopackage` flag)
-* `--outfmt=OUTFMT`: flag specifies the format you would like the plots to be printed to. If the flag is not used, they will be printed to a 'png'
-* `-p`/`--lp`: Flag to plot a long profile starting from ID
-* `-a`/`--lp_all`: Flag to plot the long profile for all streams
-* `-c`/`--lp_combined`: Flag to plot long profiles for all streams with long profile starting from ID highlighted
-* `-k`/`--ksn`: Flag to plot ksn on long profile
-* `-s`/`--show`: Flag to display plots once they are written
-* `-g`/`--geopackage`: Flag to export a geopackage of the long profile starting from ID for plotting in GIS
-
-#### Example workflow
-
-* The final step to produce some awesome long profile plots is to run the lsdtt-channel-ploter tool. Like the above command, we must call the tool then point it to the data we want it to use and specify what exactly we want the tool to output. The command will look something like the following:
-```
-$ python path/to/netowrk-tool/lsdtt-channel-plotter.py *nameofyourfile*.gpkg *nameofyourfile*_nodes.gpkg --id=ID --outbase=OUTBASE --outfmt=OUTFMT -packsg 
-```
-
-For our example, this looks like:
-```
-$ python /home/josie/LSDTopoTools/LSDTT-network-tool/lsdtt-channel-plotter.py CascadeRiver_network.gpkg CascadeRiver_network_nodes.gpkg --id=0 --outbase=CascadeRiver --outfmt=svg -packsg
-```
-
-* And there you have it! You have successfully created a number of nice long profile plots. Congrats!
-
-
-# Future Goals for Network Tool
-## Inputs
-### Input chi analysis output from LSDTT
-  * LSDTT outputs will include the `source_key`, `receiver_node`, and `node_ID`.
-  * Working to see if we can get these updates to LSDTT, hoping to be able to link the network tool with chi, z, etc. data.
-
-## Tool
-### Initial tool to build the channel network.
-  * The first half of the code is currently doing this.
-  * Currently working to update channel network code to include new inputs from LSDTT-chi tool.
-
-### Once network is built, generate plots of the network and the channel long profile
-  * Capability to select a `node_ID` that the code will walk down to generate a channel long profile.
-    * This will make it possible to make channel profiles for mutiple branches, etc.
-
-### Planning to use `argparse` to make the tool much easier to work with.
-
-## Future expansion goals
-### Pairing `LSDTT_terraces` with channel long profile outputs to generate plot with both.
-### qGIS plugin.
