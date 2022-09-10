@@ -29,6 +29,7 @@ from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
 from qgis.gui import QgsFileWidget
 from qgis.core import QgsVectorLayer, QgsProject
+from qgis.PyQt.QtGui import QIcon, QPixmap
 from .lsdtt_network_tool import LSDTTNetworkTool
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
@@ -47,11 +48,23 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         self.fwOutputFileName.setStorageMode(QgsFileWidget.SaveFile)
+
         self.pbRun = QtWidgets.QPushButton("Run")
         self.pbRun.clicked.connect(self.onPbRunClicked)
         self.button_box.helpRequested.connect(self.onHelpClicked)
-
         self.button_box.addButton(self.pbRun, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.pbSaveLog = QtWidgets.QPushButton()
+        self.pbSaveLog.setIcon(QIcon(":images/themes/default/mActionFileSave.svg"))
+        self.logButtonBox.addButton(self.pbSaveLog, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.pbCopyLog = QtWidgets.QPushButton()
+        self.pbCopyLog.setIcon(QIcon(":images/themes/default/mActionEditCopy.svg"))
+        self.logButtonBox.addButton(self.pbCopyLog, QtWidgets.QDialogButtonBox.ActionRole)
+
+        self.pbClearLog = QtWidgets.QPushButton()
+        self.pbClearLog.setIcon(QIcon(":images/themes/default/console/iconClearConsole.svg"))
+        self.logButtonBox.addButton(self.pbClearLog, QtWidgets.QDialogButtonBox.ActionRole)
         
     def onHelpClicked(self):
         webbrowser.open('https://github.com/pjMitchell490/qgis_lsdtt_network_tool')
@@ -64,7 +77,7 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         export_nodes = self.cbExportNodes.isChecked()
 
         # Instantiate and run tool
-        tool = LSDTTNetworkTool(input, output, basin_key, export_nodes)
+        tool = LSDTTNetworkTool(self, input, output, basin_key, export_nodes)
         output = tool.run_network_tool()
         # Add layers to map
         for layer_name, layer_path in output.items():

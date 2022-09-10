@@ -3,20 +3,30 @@ import geopandas as gpd
 from shapely.geometry import LineString
 import numpy as np
 import os
+import logging
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+file_handler = logging.FileHandler('lsdtt_network_log2.log')
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
 
 class LSDTTNetworkTool:
-    def __init__(self, input, output, basin_key, export_nodes) -> None:
+    def __init__(self, qgis_dialog, input, output, basin_key, export_nodes) -> None:
+        self.qgis_dialog = qgis_dialog
         self._file_input = input
         self._file_output = output
         self._basin_id = basin_key
         self._export_all_nodes = export_nodes
 
     def run_network_tool(self):
-        print(self._file_input)
-        print(self._file_output)
-        print(self._basin_id)
-        print(self._export_all_nodes)
+        logger.info(self._file_input)
+        logger.info(self._file_output)
+        logger.info(self._basin_id)
+        logger.info(self._export_all_nodes)
 
 
         if self._file_output[-5:] != '.gpkg':
@@ -41,7 +51,7 @@ class LSDTTNetworkTool:
 
         # Read the LSDTopoTools river chi profile inputs, indexing by the 
         # node index
-        rp = pd.read_csv(self._file_input, index_col='index_node', na_filter=False) #node changed to NI
+        rp = pd.read_csv(self._file_input, index_col='NI', na_filter=False) #node changed to NI
         # The "source key" sets the ID for each segment -- section of channel between
         # tributary junctions.
         segment_ids = np.array(list(set(rp['source_key'])))
@@ -61,11 +71,11 @@ class LSDTTNetworkTool:
 
         _tmplist = []
         for _node in rp.index:
-            _receiver_node = rp.loc[_node, 'receiver_node']
+            _receiver_node = rp.loc[_node, 'receiver_NI']
             if _receiver_node in rp.index and _node != _receiver_node:
                 _receiver_source_key = rp.loc[_receiver_node, 'source_key']
             else:
-                print("Found mouth node. Offmap receiver node ID: "
+                logger.info("Found mouth node. Offmap receiver node ID: "
                         + str(_receiver_node))
                 _receiver_source_key = -1
                 receiver_nodes_at_mouths.append(_receiver_node)
@@ -77,7 +87,7 @@ class LSDTTNetworkTool:
 
         # Next, identify these confluences by places where the receiver_source_key
         # differs from the source_key
-        confluence_downstream_nodes = list(set(list(rp['receiver_node']
+        confluence_downstream_nodes = list(set(list(rp['receiver_NI']
                                                         [rp['source_key'] !=
                                                         rp['receiver_source_key']])))
         # Remove river mouths
@@ -128,9 +138,9 @@ class LSDTTNetworkTool:
         segments_nodes = []
         for _source_node in source_nodes:
             segment_nodes = [_source_node]
-            segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_node'])
+            segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_NI'])
             while segment_nodes[-1] not in termination_nodes:
-                segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_node'])
+                segment_nodes.append(rp.loc[segment_nodes[-1], 'receiver_NI'])
             segments_nodes.append(segment_nodes)
 
         # Next, reconstruct the data table elements for each of these points
@@ -165,13 +175,13 @@ class LSDTTNetworkTool:
         for i in range(len(internal_segment_ids)):
             toseg_bool = (internal_receiver_segment_ids[i] == internal_segment_ids)
             if np.sum(toseg_bool) > 1:
-                print(i)
-                print(np.sum(toseg_bool))
-                print("ERROR! NETWORK IS BRANCHING.")
+                logger.info(i)
+                logger.info(np.sum(toseg_bool))
+                logger.error("ERROR! NETWORK IS BRANCHING.")
             elif np.sum(toseg_bool) == 0:
-                print(i)
-                print(np.sum(toseg_bool))
-                print("Channel mouth; segment ID -1.")
+                logger.info(i)
+                logger.info(np.sum(toseg_bool))
+                logger.info("Channel mouth; segment ID -1.")
                 toseg.append(-1)
             else:
                 toseg.append(int(segment_ids[toseg_bool]))
@@ -272,7 +282,7 @@ class LSDTTNetworkTool:
         # Save to GeoPackage
         gdf_segs.to_file(self._file_output, driver="GPKG")
 
-        print("Segments written to", self._file_output)
+        logger.info("Segments written to", self._file_output)
 
 
         """
@@ -314,7 +324,7 @@ class LSDTTNetworkTool:
 
         outputs = {"network": self._file_output}
         if self._export_all_nodes:
-            print("Exporting all nodes; this may take some time...")
+            logger.info("Exporting all nodes; this may take some time...")
             # Export nodes for use of plotting
             dfnodes = pd.concat(segments)
             dfnodes['network_node_type'] = ""
@@ -323,5 +333,8 @@ class LSDTTNetworkTool:
             gdf_NetworkNodes = gpd.GeoDataFrame( dfnodes, geometry=gpd.points_from_xy(dfnodes.longitude, dfnodes.latitude, dfnodes.elevation), crs="EPSG:4326")
             gdf_NetworkNodes.to_file(file_output_nodes, driver="GPKG")
             outputs["nodes"] = file_output_nodes
-            print('Nodes written to', file_output_nodes)
+            logger.info('Nodes written to', file_output_nodes)
+
+        self.qgis_dialog.progressBar.setValue(100)
+
         return outputs
