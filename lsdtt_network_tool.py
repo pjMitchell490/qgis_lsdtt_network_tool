@@ -5,14 +5,18 @@ import numpy as np
 import os
 import logging
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+'''
+self.logger = logging.getself.logger(__name__)
+self.logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
 file_handler = logging.FileHandler('lsdtt_network_log2.log')
 file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
-logger.addHandler(stream_handler)
-logger.addHandler(file_handler)
+self.logger.addHandler(stream_handler)
+self.logger.addHandler(file_handler)
+'''
+
+
 
 class LSDTTNetworkTool:
     def __init__(self, qgis_dialog, input, output, basin_key, export_nodes) -> None:
@@ -20,13 +24,15 @@ class LSDTTNetworkTool:
         self._file_input = input
         self._file_output = output
         self._basin_id = basin_key
+        # This is a test
         self._export_all_nodes = export_nodes
+        self.logger = qgis_dialog.logger
 
     def run_network_tool(self):
-        logger.info(self._file_input)
-        logger.info(self._file_output)
-        logger.info(self._basin_id)
-        logger.info(self._export_all_nodes)
+        self.logger.info(self._file_input)
+        self.logger.info(self._file_output)
+        self.logger.info(self._basin_id)
+        self.logger.info(self._export_all_nodes)
 
 
         if self._file_output[-5:] != '.gpkg':
@@ -75,7 +81,7 @@ class LSDTTNetworkTool:
             if _receiver_node in rp.index and _node != _receiver_node:
                 _receiver_source_key = rp.loc[_receiver_node, 'source_key']
             else:
-                logger.info("Found mouth node. Offmap receiver node ID: "
+                self.logger.info("Found mouth node. Offmap receiver node ID: "
                         + str(_receiver_node))
                 _receiver_source_key = -1
                 receiver_nodes_at_mouths.append(_receiver_node)
@@ -175,13 +181,13 @@ class LSDTTNetworkTool:
         for i in range(len(internal_segment_ids)):
             toseg_bool = (internal_receiver_segment_ids[i] == internal_segment_ids)
             if np.sum(toseg_bool) > 1:
-                logger.info(i)
-                logger.info(np.sum(toseg_bool))
-                logger.error("ERROR! NETWORK IS BRANCHING.")
+                self.logger.info(i)
+                self.logger.info(np.sum(toseg_bool))
+                self.logger.error("ERROR! NETWORK IS BRANCHING.")
             elif np.sum(toseg_bool) == 0:
-                logger.info(i)
-                logger.info(np.sum(toseg_bool))
-                logger.info("Channel mouth; segment ID -1.")
+                self.logger.info(i)
+                self.logger.info(np.sum(toseg_bool))
+                self.logger.info("Channel mouth; segment ID -1.")
                 toseg.append(-1)
             else:
                 toseg.append(int(segment_ids[toseg_bool]))
@@ -282,7 +288,7 @@ class LSDTTNetworkTool:
         # Save to GeoPackage
         gdf_segs.to_file(self._file_output, driver="GPKG")
 
-        logger.info("Segments written to", self._file_output)
+        self.logger.info("LSDTT Network Tool Operation complete")
 
 
         """
@@ -324,7 +330,7 @@ class LSDTTNetworkTool:
 
         outputs = {"network": self._file_output}
         if self._export_all_nodes:
-            logger.info("Exporting all nodes; this may take some time...")
+            self.logger.info("Exporting all nodes; this may take some time...")
             # Export nodes for use of plotting
             dfnodes = pd.concat(segments)
             dfnodes['network_node_type'] = ""
@@ -333,7 +339,7 @@ class LSDTTNetworkTool:
             gdf_NetworkNodes = gpd.GeoDataFrame( dfnodes, geometry=gpd.points_from_xy(dfnodes.longitude, dfnodes.latitude, dfnodes.elevation), crs="EPSG:4326")
             gdf_NetworkNodes.to_file(file_output_nodes, driver="GPKG")
             outputs["nodes"] = file_output_nodes
-            logger.info('Nodes written to', file_output_nodes)
+            self.logger.info('Nodes written to', file_output_nodes)
 
         self.qgis_dialog.progressBar.setValue(100)
 

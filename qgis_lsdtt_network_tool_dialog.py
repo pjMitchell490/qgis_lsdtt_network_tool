@@ -30,11 +30,25 @@ from qgis.PyQt import QtWidgets
 from qgis.gui import QgsFileWidget
 from qgis.core import QgsVectorLayer, QgsProject
 from qgis.PyQt.QtGui import QIcon, QPixmap
+import logging
 from .lsdtt_network_tool import LSDTTNetworkTool
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qgis_lsdtt_network_tool_dialog_base.ui'))
+
+
+class QTextEditHandler(logging.Handler):
+    def __init__(self, messageLog):
+        super().__init__()
+        self.widget = messageLog
+        self.widget.setReadOnly(True)   
+
+
+    
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
 
 
 class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -49,28 +63,39 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.fwOutputFileName.setStorageMode(QgsFileWidget.SaveFile)
 
+        self.messageLog = self.pteMessageLog
+
+        self.logger = logging.getLogger(__name__)
+        self.messageHandler = QTextEditHandler(self.messageLog)
+        self.messageHandler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        self.logger.addHandler(self.messageHandler)
+        # You can control the logging level
+        self.logger.setLevel(logging.DEBUG)
+
         self.pbRun = QtWidgets.QPushButton("Run")
         self.pbRun.clicked.connect(self.onPbRunClicked)
-        self.button_box.helpRequested.connect(self.onHelpClicked)
-        self.button_box.addButton(self.pbRun, QtWidgets.QDialogButtonBox.ActionRole)
+        self.bbDialog.helpRequested.connect(self.onHelpClicked)
+        self.bbDialog.addButton(self.pbRun, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.pbSaveLog = QtWidgets.QPushButton()
         self.pbSaveLog.setIcon(QIcon(":images/themes/default/mActionFileSave.svg"))
-        self.logButtonBox.addButton(self.pbSaveLog, QtWidgets.QDialogButtonBox.ActionRole)
+        self.bbLog.addButton(self.pbSaveLog, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.pbCopyLog = QtWidgets.QPushButton()
         self.pbCopyLog.setIcon(QIcon(":images/themes/default/mActionEditCopy.svg"))
-        self.logButtonBox.addButton(self.pbCopyLog, QtWidgets.QDialogButtonBox.ActionRole)
+        self.bbLog.addButton(self.pbCopyLog, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.pbClearLog = QtWidgets.QPushButton()
         self.pbClearLog.setIcon(QIcon(":images/themes/default/console/iconClearConsole.svg"))
-        self.logButtonBox.addButton(self.pbClearLog, QtWidgets.QDialogButtonBox.ActionRole)
+        self.bbLog.addButton(self.pbClearLog, QtWidgets.QDialogButtonBox.ActionRole)
         
     def onHelpClicked(self):
         webbrowser.open('https://github.com/pjMitchell490/qgis_lsdtt_network_tool')
 
     def onPbRunClicked(self):
         # Set input values to pass to the Network Tool
+        print(self.logger)
+        self.logger.debug("Run clicked")
         input = self.fwInputFileName.filePath()
         output = self.fwOutputFileName.filePath()
         basin_key = self.sbBasinKey.value()
