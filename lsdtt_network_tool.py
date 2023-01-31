@@ -42,18 +42,7 @@ class LSDTTNetworkTool:
         if self._export_all_nodes:
             file_output_nodes = os.path.splitext(self._file_output)[0] + '_nodes' + '.gpkg'
 
-        """    
-        # Temporary, for local testing
-        file_input='GooseberryRiver_MChiSegmented.csv'
-        file_output='GooseberryNetworkTest20211117_4.gpkg'
-        _write_segment_chi = False
-        _write_segment_drainage_area = True
-        _write_segment_slope = True
-        _write_segment_elevations = True
-        _basin_id = 8
-        _write_ksn = True
-        _export_all_nodes = True
-        """    
+        self.qgis_dialog.progressBar.setValue(5)
 
         # Read the LSDTopoTools river chi profile inputs, indexing by the 
         # node index
@@ -72,8 +61,13 @@ class LSDTTNetworkTool:
         # DATAFRAME
 
         # Limit to a single basin if so desired
+        length = rp.index.size
+        progress_before_step = 5.0
+        progress = progress_before_step
+        progress_after_step = 40
         if self._basin_id:
             rp = rp[rp['basin_key'] == self._basin_id]
+
 
         _tmplist = []
         for _node in rp.index:
@@ -86,10 +80,17 @@ class LSDTTNetworkTool:
                 _receiver_source_key = -1
                 receiver_nodes_at_mouths.append(_receiver_node)
             _tmplist.append(_receiver_source_key)
+            progress += (progress_after_step - progress_before_step)/length
+            print(progress)
+            self.qgis_dialog.progressBar.setValue(progress)
+        self.qgis_dialog.progressBar.setValue(progress_after_step)
+
         rp['receiver_source_key'] = _tmplist
 
         # In the case of the downstream-most one, no node with this ID will exist
         mouth_nodes = list(rp[rp['receiver_source_key'] == -1].index)
+
+
 
         # Next, identify these confluences by places where the receiver_source_key
         # differs from the source_key
@@ -103,6 +104,8 @@ class LSDTTNetworkTool:
             confluence_downstream_nodes = confluence_downstream_nodes\
                                             [confluence_downstream_nodes
                                             != _receiver_node_at_mouth]
+
+        self.qgis_dialog.progressBar.setValue(60)
 
         # Create a set of confluence locations
         confluences = []
