@@ -61,12 +61,11 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        
         self.fwOutputFileName.setStorageMode(QgsFileWidget.SaveFile)
 
-        self.messageLog = self.pteMessageLog
-
         self.logger = logging.getLogger(__name__)
-        self.messageHandler = QTextEditHandler(self.messageLog)
+        self.messageHandler = QTextEditHandler(self.pteMessageLog)
         self.messageHandler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         self.logger.addHandler(self.messageHandler)
         # You can control the logging level
@@ -115,12 +114,12 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         self.logger.debug("Copying log")
 
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(self.messageLog.toPlainText())
+        clipboard.setText(self.pteMessageLog.toPlainText())
 
     def onPbClearLogClicked(self):
-        self.messageLog.clear()
+        self.pteMessageLog.clear()
 
     def onPbSaveLogClicked(self):
         save_filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save Message Log", "", ".txt")
         with open(save_filename[0] + save_filename[1], 'w') as f:
-            f.write(self.messageLog.toPlainText())
+            f.write(self.pteMessageLog.toPlainText())
