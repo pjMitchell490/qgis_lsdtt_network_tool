@@ -79,14 +79,17 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.pbSaveLog = QtWidgets.QPushButton()
         self.pbSaveLog.setIcon(QIcon(":images/themes/default/mActionFileSave.svg"))
+        self.pbSaveLog.clicked.connect(self.onPbSaveLogClicked)
         self.bbLog.addButton(self.pbSaveLog, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.pbCopyLog = QtWidgets.QPushButton()
         self.pbCopyLog.setIcon(QIcon(":images/themes/default/mActionEditCopy.svg"))
+        self.pbCopyLog.clicked.connect(self.onPbCopyLogClicked)
         self.bbLog.addButton(self.pbCopyLog, QtWidgets.QDialogButtonBox.ActionRole)
 
         self.pbClearLog = QtWidgets.QPushButton()
         self.pbClearLog.setIcon(QIcon(":images/themes/default/console/iconClearConsole.svg"))
+        self.pbClearLog.clicked.connect(self.onPbClearLogClicked)
         self.bbLog.addButton(self.pbClearLog, QtWidgets.QDialogButtonBox.ActionRole)
         
     def onHelpClicked(self):
@@ -94,7 +97,6 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def onPbRunClicked(self):
         # Set input values to pass to the Network Tool
-        print(self.logger)
         self.logger.debug("Run clicked")
         input = self.fwInputFileName.filePath()
         output = self.fwOutputFileName.filePath()
@@ -108,3 +110,17 @@ class LSDTTNetworkToolDialog(QtWidgets.QDialog, FORM_CLASS):
         for layer_name, layer_path in output.items():
             vlayer = QgsVectorLayer(layer_path, layer_name, "ogr")
             QgsProject.instance().addMapLayer(vlayer)
+
+    def onPbCopyLogClicked(self):
+        self.logger.debug("Copying log")
+
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(self.messageLog.toPlainText())
+
+    def onPbClearLogClicked(self):
+        self.messageLog.clear()
+
+    def onPbSaveLogClicked(self):
+        save_filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save Message Log", "", ".txt")
+        with open(save_filename[0] + save_filename[1], 'w') as f:
+            f.write(self.messageLog.toPlainText())
